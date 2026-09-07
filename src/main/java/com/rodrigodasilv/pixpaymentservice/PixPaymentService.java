@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class PixPaymentServiceApplication {
+public class PixPaymentService {
 
 	public static void main(String[] args) {
-		SpringApplication.run(PixPaymentServiceApplication.class, args);
+		SpringApplication.run(PixPaymentService.class, args);
 	}
 
 }
