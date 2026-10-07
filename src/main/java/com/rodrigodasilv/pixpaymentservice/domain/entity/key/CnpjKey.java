@@ -1,16 +1,17 @@
-package com.rodrigodasilv.pixpaymentservice.domain.entity.pix.key;
+package com.rodrigodasilv.pixpaymentservice.domain.entity.key;
 
-import com.rodrigodasilv.pixpaymentservice.domain.entity.pix.Key;
+import com.rodrigodasilv.pixpaymentservice.domain.entity.Key;
+import com.rodrigodasilv.pixpaymentservice.domain.exception.InvalidChargeException;
 
 public record CnpjKey(String value) implements Key {
 
     public CnpjKey {
         if (value == null || !value.matches("\\d{14}")) {
-            throw new IllegalArgumentException("Invalid CNPJ");
+            throw new InvalidChargeException("Invalid CNPJ");
         }
 
         if (!isValidCnpj(value)) {
-            throw new IllegalArgumentException("Invalid CNPJ check digits");
+            throw new InvalidChargeException("Invalid CNPJ check digits");
         }
     }
 

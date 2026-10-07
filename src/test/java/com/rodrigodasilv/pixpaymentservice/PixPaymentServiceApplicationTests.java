@@ -5,20 +5,45 @@ import com.rodrigodasilv.pixpaymentservice.application.adapter.Crc16CalculatorAd
 import com.rodrigodasilv.pixpaymentservice.application.adapter.PixCopyPasteAdapter;
 import com.rodrigodasilv.pixpaymentservice.application.dto.CreateChargeRequest;
 import com.rodrigodasilv.pixpaymentservice.application.dto.PixKeyType;
+import com.rodrigodasilv.pixpaymentservice.application.orchestration.PixPaymentOrchestrator;
+import com.rodrigodasilv.pixpaymentservice.application.orchestration.step.AdditionalDataFieldStep;
+import com.rodrigodasilv.pixpaymentservice.application.orchestration.step.Crc16Step;
+import com.rodrigodasilv.pixpaymentservice.application.orchestration.step.MerchantAccountInformationStep;
+import com.rodrigodasilv.pixpaymentservice.application.orchestration.step.MerchantInformationStep;
+import com.rodrigodasilv.pixpaymentservice.application.orchestration.step.PayloadFormatStep;
+import com.rodrigodasilv.pixpaymentservice.application.orchestration.step.PaymentDetailsStep;
+import com.rodrigodasilv.pixpaymentservice.infrastructure.web.ApiExceptionHandler;
+import com.rodrigodasilv.pixpaymentservice.domain.entity.Charge;
+import com.rodrigodasilv.pixpaymentservice.domain.entity.Merchant;
+import com.rodrigodasilv.pixpaymentservice.domain.entity.Money;
+import com.rodrigodasilv.pixpaymentservice.domain.entity.key.EvpKey;
+import com.rodrigodasilv.pixpaymentservice.domain.exception.InvalidChargeException;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PixPaymentServiceApplicationTests {
 
 	@Test
 	void generatesPixCopyPasteWithAmountAndValidCrc() {
+		Crc16CalculatorAdapter crc16Calculator = new Crc16CalculatorAdapter();
+		PixPaymentOrchestrator orchestrator = new PixPaymentOrchestrator(List.of(
+				new PayloadFormatStep(),
+				new MerchantAccountInformationStep(),
+				new PaymentDetailsStep(),
+				new MerchantInformationStep(),
+				new AdditionalDataFieldStep(),
+				new Crc16Step(crc16Calculator)
+		));
 		PixCopyPasteAdapter service = new PixCopyPasteAdapter(
 				new ChargeMapper(),
-				new Crc16CalculatorAdapter()
+				orchestrator
 		);
 		CreateChargeRequest request = new CreateChargeRequest(
 				PixKeyType.EVP,
@@ -31,18 +56,85 @@ class PixPaymentServiceApplicationTests {
 
 		String payload = service.generate(request);
 
+		assertTrue(payload.startsWith("000201"));
 		assertTrue(payload.contains("540512.50"));
 		assertTrue(payload.contains("5913Example Store"));
-		assertTrue(payload.contains("62070503***6304"));
-		assertEquals(
-				String.format("%04X", new Crc16CalculatorAdapter().calculate(payload.substring(0, payload.length() - 4))),
-				payload.substring(payload.length() - 4)
-		);
+		assertTrue(payload.contains("62070503***"));
+		String crcInput = payload.substring(0, payload.length() - 4);
+		assertTrue(payload.endsWith(String.format("6304%04X", crc16Calculator.calculate(crcInput))));
 	}
 
 	@Test
 	void calculatesCrc16CcittFalseKnownVector() {
 		assertEquals(0x29B1, new Crc16CalculatorAdapter().calculate("123456789"));
+	}
+
+	@Test
+	void returnsBadRequestDetailForInvalidCpf() {
+		CreateChargeRequest request = new CreateChargeRequest(
+				PixKeyType.CPF,
+				"129031449741212312",
+				new BigDecimal("51.00"),
+				"Example Store",
+				"Sao Paulo",
+				"Order 42"
+		);
+		InvalidChargeException exception = assertThrows(
+				InvalidChargeException.class,
+				() -> new ChargeMapper().toCharge(request)
+		);
+
+		var response = new ApiExceptionHandler().handleInvalidCharge(exception);
+
+		assertEquals(400, response.getStatusCode().value());
+		assertEquals("Invalid CPF", response.getBody().getDetail());
+	}
+
+	@Test
+	void returnsBadRequestDetailForAmountWithMoreThanTwoDecimalPlaces() {
+		CreateChargeRequest request = new CreateChargeRequest(
+				PixKeyType.EVP,
+				"123e4567-e89b-12d3-a456-426614174000",
+				new BigDecimal("51.0001"),
+				"Example Store",
+				"Sao Paulo",
+				"Order 42"
+		);
+		InvalidChargeException exception = assertThrows(
+				InvalidChargeException.class,
+				() -> new ChargeMapper().toCharge(request)
+		);
+
+		var response = new ApiExceptionHandler().handleInvalidCharge(exception);
+
+		assertEquals(400, response.getStatusCode().value());
+		assertEquals("Amount must have at most two decimal places", response.getBody().getDetail());
+	}
+
+	@Test
+	void springInjectsPixPaymentStepsInOrder() {
+		try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext()) {
+			context.registerBean(Crc16CalculatorAdapter.class);
+			context.scan(PixPaymentOrchestrator.class.getPackageName());
+			context.refresh();
+
+			PixPaymentOrchestrator orchestrator = context.getBean(PixPaymentOrchestrator.class);
+			Charge charge = new Charge(
+					new EvpKey("123e4567-e89b-12d3-a456-426614174000"),
+					new Money(new BigDecimal("12.50")),
+					new Merchant("Example Store", "Sao Paulo"),
+					"Order 42"
+			);
+
+			String payload = orchestrator.generate(charge);
+
+			assertTrue(payload.startsWith("000201"));
+			assertTrue(payload.contains("62070503***"));
+			assertEquals(
+					String.format("%04X", new Crc16CalculatorAdapter().calculate(payload.substring(0, payload.length() - 4))),
+					payload.substring(payload.length() - 4)
+			);
+		}
 	}
 
 }
