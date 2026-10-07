@@ -1,5 +1,7 @@
 package com.rodrigodasilv.pixpaymentservice.domain.entity.pix.key;
 
+import com.rodrigodasilv.pixpaymentservice.domain.entity.pix.Key;
+
 public record EmailKey(String value) implements Key {
 
     private static final int MAX_LENGTH = 77;

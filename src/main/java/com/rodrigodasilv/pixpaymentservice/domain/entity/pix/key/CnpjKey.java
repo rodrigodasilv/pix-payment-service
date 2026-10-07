@@ -1,5 +1,7 @@
 package com.rodrigodasilv.pixpaymentservice.domain.entity.pix.key;
 
+import com.rodrigodasilv.pixpaymentservice.domain.entity.pix.Key;
+
 public record CnpjKey(String value) implements Key {
 
     public CnpjKey {
