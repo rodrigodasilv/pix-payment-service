@@ -18,7 +18,7 @@ On Windows:
 On Linux or macOS:
 
 ```shell
-./mvnw spring-boot:run
+bash ./mvnw spring-boot:run
 ```
 
 The service listens on `http://localhost:8080` by default.
@@ -89,7 +89,17 @@ The cache is in-memory and local to each service instance. It is lost when the p
 Run the test suite:
 
 ```shell
-./mvnw test
+# Windows PowerShell
+./mvnw.cmd test
+
+# Linux or macOS
+bash ./mvnw test
 ```
 
 The tests cover BR Code field assembly, CRC checksum generation, and invalid charge data handling.
+
+## GitHub Releases
+
+The GitHub Actions workflow verifies pull requests and pushes to `main`. When a GitHub Release is published with a `v<version>` tag, the workflow builds the executable JAR, packages it with this README in a ZIP, and attaches that ZIP to the Release. For example, publish a release tagged `v0.1.0` to produce `pix-payment-service-0.1.0.zip`.
+
+This distributes a downloadable application archive through GitHub Releases. It does not publish the artifact to Maven Central or GitHub Packages.
