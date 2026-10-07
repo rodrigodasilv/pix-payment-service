@@ -93,3 +93,9 @@ Run the test suite:
 ```
 
 The tests cover BR Code field assembly, CRC checksum generation, and invalid charge data handling.
+
+## GitHub Releases
+
+The GitHub Actions workflow verifies pull requests and pushes to `main`. When a GitHub Release is published with a `v<version>` tag, the workflow builds the executable JAR, packages it with this README in a ZIP, and attaches that ZIP to the Release. For example, publish a release tagged `v0.1.0` to produce `pix-payment-service-0.1.0.zip`.
+
+This distributes a downloadable application archive through GitHub Releases. It does not publish the artifact to Maven Central or GitHub Packages.
