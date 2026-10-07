@@ -1,9 +1,10 @@
 package com.rodrigodasilv.pixpaymentservice.domain.entity.pix;
 
-import com.rodrigodasilv.pixpaymentservice.domain.entity.pix.key.Key;
 import lombok.RequiredArgsConstructor;
+import lombok.Getter;
 
 @RequiredArgsConstructor
+@Getter
 public class Charge {
     private final Key key;
     private final Money amount;
