@@ -26,7 +26,7 @@ jobs:
           cache: maven
 
       - name: Verify project
-        run: ./mvnw --batch-mode verify
+        run: bash ./mvnw --batch-mode verify
 
   release:
     if: github.event_name == 'release'
@@ -46,10 +46,10 @@ jobs:
           cache: maven
 
       - name: Set artifact version from tag
-        run: ./mvnw --batch-mode org.codehaus.mojo:versions-maven-plugin:2.19.1:set "-DnewVersion=${GITHUB_REF_NAME#v}" -DgenerateBackupPoms=false
+        run: bash ./mvnw --batch-mode org.codehaus.mojo:versions-maven-plugin:2.19.1:set "-DnewVersion=${GITHUB_REF_NAME#v}" -DgenerateBackupPoms=false
 
       - name: Build executable JAR
-        run: ./mvnw --batch-mode package
+        run: bash ./mvnw --batch-mode package
 
       - name: Assemble release ZIP
         run: |

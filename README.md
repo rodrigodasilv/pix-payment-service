@@ -18,7 +18,7 @@ On Windows:
 On Linux or macOS:
 
 ```shell
-./mvnw spring-boot:run
+bash ./mvnw spring-boot:run
 ```
 
 The service listens on `http://localhost:8080` by default.
@@ -89,7 +89,11 @@ The cache is in-memory and local to each service instance. It is lost when the p
 Run the test suite:
 
 ```shell
-./mvnw test
+# Windows PowerShell
+./mvnw.cmd test
+
+# Linux or macOS
+bash ./mvnw test
 ```
 
 The tests cover BR Code field assembly, CRC checksum generation, and invalid charge data handling.
