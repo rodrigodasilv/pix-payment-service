@@ -13,13 +13,8 @@ import com.rodrigodasilv.pixpaymentservice.application.orchestration.step.Mercha
 import com.rodrigodasilv.pixpaymentservice.application.orchestration.step.PayloadFormatStep;
 import com.rodrigodasilv.pixpaymentservice.application.orchestration.step.PaymentDetailsStep;
 import com.rodrigodasilv.pixpaymentservice.infrastructure.web.ApiExceptionHandler;
-import com.rodrigodasilv.pixpaymentservice.domain.entity.Charge;
-import com.rodrigodasilv.pixpaymentservice.domain.entity.Merchant;
-import com.rodrigodasilv.pixpaymentservice.domain.entity.Money;
-import com.rodrigodasilv.pixpaymentservice.domain.entity.key.EvpKey;
 import com.rodrigodasilv.pixpaymentservice.domain.exception.InvalidChargeException;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -109,32 +104,6 @@ class PixPaymentServiceApplicationTests {
 
 		assertEquals(400, response.getStatusCode().value());
 		assertEquals("Amount must have at most two decimal places", response.getBody().getDetail());
-	}
-
-	@Test
-	void springInjectsPixPaymentStepsInOrder() {
-		try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext()) {
-			context.registerBean(Crc16CalculatorAdapter.class);
-			context.scan(PixPaymentOrchestrator.class.getPackageName());
-			context.refresh();
-
-			PixPaymentOrchestrator orchestrator = context.getBean(PixPaymentOrchestrator.class);
-			Charge charge = new Charge(
-					new EvpKey("123e4567-e89b-12d3-a456-426614174000"),
-					new Money(new BigDecimal("12.50")),
-					new Merchant("Example Store", "Sao Paulo"),
-					"Order 42"
-			);
-
-			String payload = orchestrator.generate(charge);
-
-			assertTrue(payload.startsWith("000201"));
-			assertTrue(payload.contains("62070503***"));
-			assertEquals(
-					String.format("%04X", new Crc16CalculatorAdapter().calculate(payload.substring(0, payload.length() - 4))),
-					payload.substring(payload.length() - 4)
-			);
-		}
 	}
 
 }

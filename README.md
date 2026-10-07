@@ -1,6 +1,6 @@
 # Pix Payment Service
 
-High-throughput Pix copy-and-paste generator API built with Spring Boot, stateless request processing, DDD-inspired domain modeling, hexagonal architecture, the Pipeline design pattern, CRC-16 validation, and Caffeine caching.
+High-throughput Pix copy-and-paste generator API built with Spring Boot, stateless request processing, DDD-inspired domain modeling, hexagonal architecture, the Pipeline design pattern, CRC-16 checksum generation and Caffeine caching.
 
 ## Requirements
 
@@ -92,4 +92,4 @@ Run the test suite:
 ./mvnw test
 ```
 
-The tests cover BR Code field assembly, CRC validation, and Spring's `@Order` injection of the payment steps.
+The tests cover BR Code field assembly, CRC checksum generation, and invalid charge data handling.
