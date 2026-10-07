@@ -1,16 +1,17 @@
-package com.rodrigodasilv.pixpaymentservice.domain.entity.pix.key;
+package com.rodrigodasilv.pixpaymentservice.domain.entity.key;
 
-import com.rodrigodasilv.pixpaymentservice.domain.entity.pix.Key;
+import com.rodrigodasilv.pixpaymentservice.domain.entity.Key;
+import com.rodrigodasilv.pixpaymentservice.domain.exception.InvalidChargeException;
 
 public record CpfKey(String value) implements Key {
 
     public CpfKey {
         if (value == null || !value.matches("\\d{11}")) {
-            throw new IllegalArgumentException("Invalid CPF");
+            throw new InvalidChargeException("Invalid CPF");
         }
 
         if (!isValidCpf(value)) {
-            throw new IllegalArgumentException("Invalid CPF check digits");
+            throw new InvalidChargeException("Invalid CPF check digits");
         }
     }
 

@@ -2,15 +2,16 @@ package com.rodrigodasilv.pixpaymentservice.application.mapper;
 
 import com.rodrigodasilv.pixpaymentservice.application.dto.CreateChargeRequest;
 import com.rodrigodasilv.pixpaymentservice.application.dto.PixKeyType;
-import com.rodrigodasilv.pixpaymentservice.domain.entity.pix.Charge;
-import com.rodrigodasilv.pixpaymentservice.domain.entity.pix.Key;
-import com.rodrigodasilv.pixpaymentservice.domain.entity.pix.Merchant;
-import com.rodrigodasilv.pixpaymentservice.domain.entity.pix.Money;
-import com.rodrigodasilv.pixpaymentservice.domain.entity.pix.key.CnpjKey;
-import com.rodrigodasilv.pixpaymentservice.domain.entity.pix.key.CpfKey;
-import com.rodrigodasilv.pixpaymentservice.domain.entity.pix.key.EmailKey;
-import com.rodrigodasilv.pixpaymentservice.domain.entity.pix.key.EvpKey;
-import com.rodrigodasilv.pixpaymentservice.domain.entity.pix.key.PhoneKey;
+import com.rodrigodasilv.pixpaymentservice.domain.entity.Charge;
+import com.rodrigodasilv.pixpaymentservice.domain.entity.Key;
+import com.rodrigodasilv.pixpaymentservice.domain.entity.Merchant;
+import com.rodrigodasilv.pixpaymentservice.domain.entity.Money;
+import com.rodrigodasilv.pixpaymentservice.domain.entity.key.CnpjKey;
+import com.rodrigodasilv.pixpaymentservice.domain.entity.key.CpfKey;
+import com.rodrigodasilv.pixpaymentservice.domain.entity.key.EmailKey;
+import com.rodrigodasilv.pixpaymentservice.domain.entity.key.EvpKey;
+import com.rodrigodasilv.pixpaymentservice.domain.entity.key.PhoneKey;
+import com.rodrigodasilv.pixpaymentservice.domain.exception.InvalidChargeException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,7 +19,7 @@ public class ChargeMapper {
 
     public Charge toCharge(CreateChargeRequest request) {
         if (request == null) {
-            throw new IllegalArgumentException("Charge request cannot be null");
+            throw new InvalidChargeException("Charge request cannot be null");
         }
 
         return new Charge(
@@ -31,7 +32,7 @@ public class ChargeMapper {
 
     private Key toKey(PixKeyType keyType, String value) {
         if (keyType == null) {
-            throw new IllegalArgumentException("Pix key type cannot be null");
+            throw new InvalidChargeException("Pix key type cannot be null");
         }
 
         return switch (keyType) {

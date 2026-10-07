@@ -1,4 +1,8 @@
 package com.rodrigodasilv.pixpaymentservice.application.dto;
 
-public record PixCopyPasteResponse(String pixCopyPaste) {
-}
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Generated Pix BR Code payload")
+public record PixCopyPasteResponse(
+        String pixCopyPaste
+) {}
