@@ -2,44 +2,32 @@ package com.rodrigodasilv.pixpaymentservice;
 
 import com.rodrigodasilv.pixpaymentservice.application.mapper.ChargeMapper;
 import com.rodrigodasilv.pixpaymentservice.application.adapter.Crc16CalculatorAdapter;
-import com.rodrigodasilv.pixpaymentservice.application.adapter.PixCopyPasteAdapter;
 import com.rodrigodasilv.pixpaymentservice.application.dto.CreateChargeRequest;
 import com.rodrigodasilv.pixpaymentservice.application.dto.PixKeyType;
-import com.rodrigodasilv.pixpaymentservice.application.orchestration.PixPaymentOrchestrator;
-import com.rodrigodasilv.pixpaymentservice.application.orchestration.step.AdditionalDataFieldStep;
-import com.rodrigodasilv.pixpaymentservice.application.orchestration.step.Crc16Step;
-import com.rodrigodasilv.pixpaymentservice.application.orchestration.step.MerchantAccountInformationStep;
-import com.rodrigodasilv.pixpaymentservice.application.orchestration.step.MerchantInformationStep;
-import com.rodrigodasilv.pixpaymentservice.application.orchestration.step.PayloadFormatStep;
-import com.rodrigodasilv.pixpaymentservice.application.orchestration.step.PaymentDetailsStep;
+import com.rodrigodasilv.pixpaymentservice.application.service.PixCopyPasteService;
 import com.rodrigodasilv.pixpaymentservice.infrastructure.web.ApiExceptionHandler;
 import com.rodrigodasilv.pixpaymentservice.domain.exception.InvalidChargeException;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@SpringBootTest
 class PixPaymentServiceApplicationTests {
+
+	@Autowired
+	private PixCopyPasteService pixCopyPasteService;
+
+	@Autowired
+	private Crc16CalculatorAdapter crc16Calculator;
 
 	@Test
 	void generatesPixCopyPasteWithAmountAndValidCrc() {
-		Crc16CalculatorAdapter crc16Calculator = new Crc16CalculatorAdapter();
-		PixPaymentOrchestrator orchestrator = new PixPaymentOrchestrator(List.of(
-				new PayloadFormatStep(),
-				new MerchantAccountInformationStep(),
-				new PaymentDetailsStep(),
-				new MerchantInformationStep(),
-				new AdditionalDataFieldStep(),
-				new Crc16Step(crc16Calculator)
-		));
-		PixCopyPasteAdapter service = new PixCopyPasteAdapter(
-				new ChargeMapper(),
-				orchestrator
-		);
 		CreateChargeRequest request = new CreateChargeRequest(
 				PixKeyType.EVP,
 				"123e4567-e89b-12d3-a456-426614174000",
@@ -49,7 +37,7 @@ class PixPaymentServiceApplicationTests {
 				"Order 42"
 		);
 
-		String payload = service.generate(request);
+		String payload = pixCopyPasteService.generate(request);
 
 		assertTrue(payload.startsWith("000201"));
 		assertTrue(payload.contains("540512.50"));
