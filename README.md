@@ -23,6 +23,17 @@ bash ./mvnw spring-boot:run
 
 The service listens on `http://localhost:8080` by default.
 
+## Operations
+
+Spring Boot Actuator exposes the following endpoints:
+
+- `/actuator/health` — overall health status.
+- `/actuator/health/liveness` — whether the application process is alive.
+- `/actuator/health/readiness` — whether the application should receive traffic.
+- `/actuator/metrics` — available application metrics.
+
+Health liveness and readiness probes are enabled explicitly; The metrics endpoint is exposed for operational monitoring.
+
 ## API
 
 Swagger UI is available at [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html). The generated OpenAPI JSON is available at [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs).
